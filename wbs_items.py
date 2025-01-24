@@ -87,7 +87,6 @@ wbs_structure = {
         },
         "Integration": {
             "Drone and Raspberry Pi": {
-                "Communication Testing": {},
                 "Latency Analysis": {},
                 "Error Handling Implementation": {},
                 "AI Model and Camera Feed": {}

@@ -19,12 +19,21 @@ def generate_wbs_graph(wbs_dict, output_filename='wbs_graph'):
     Generate a top-down (TB) graph from a nested dictionary describing the WBS.
     """
     dot = Digraph('WBS', format='png')
-    dot.attr(rankdir='TB')  # top to bottom layout
 
-    # Each top-level entry has no parent, so parent_id = None
+    # Specify all graph attributes in a single call
+    dot.attr(
+        'graph',
+        rankdir='TB',     # Top-to-bottom orientation
+        splines='ortho',  # Right-angled edges
+        ranksep='1.5',    # Vertical space between levels
+        nodesep='0.3'     # Horizontal space between sibling nodes
+    )
+
     add_nodes_edges(dot, None, wbs_dict)
 
     dot.render(output_filename, view=False)
+
+
 
 if __name__ == "__main__":
     # Example WBS structure
