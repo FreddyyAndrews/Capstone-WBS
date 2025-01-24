@@ -1,0 +1,125 @@
+from graphviz import Digraph
+
+def add_nodes_edges(graph, parent_id, structure):
+    """
+    Recursively traverse the nested dictionary 'structure' and add nodes/edges to the Graphviz Digraph.
+    """
+    for task_name, sub_tasks in structure.items():
+        current_id = str(hash(task_name))  # Create a unique ID for each node
+        graph.node(current_id, task_name)
+        if parent_id is not None:
+            graph.edge(parent_id, current_id)
+        # If there are sub tasks, recurse
+        if isinstance(sub_tasks, dict) and sub_tasks:
+            add_nodes_edges(graph, current_id, sub_tasks)
+
+def generate_wbs_graph(wbs_dict, output_filename='wbs_graph'):
+    """
+    Generate a top-down (TB) graph from a nested dictionary describing the WBS.
+    """
+    dot = Digraph('WBS', format='png')
+    dot.attr(rankdir='TB')  # top to bottom layout
+
+    # Each top-level entry has no parent, so parent_id = None
+    add_nodes_edges(dot, None, wbs_dict)
+
+    dot.render(output_filename, view=False)
+
+if __name__ == "__main__":
+    # Example WBS structure
+    # Replace this dictionary with your own nested tasks.
+    wbs_structure = {
+    "T.A.I.L.S": {
+        "Management": {
+            "Documentation": {
+                "Project Plan": {},
+                "Technical Specifications": {},
+                "User Manual": {}
+            },
+            "Deliverables": {
+                "Timeline": {},
+                "Milestones": {},
+                "Final Report": {}
+            },
+            "Funding": {
+                "Budget Allocation": {},
+                "Grant Applications": {},
+                "Resource Procurement": {}
+            }
+        },
+        "Design": {
+            "Drone Design": {
+                "Frame and Propulsion": {},
+                "Camera System": {},
+                "GPS Module Integration": {}
+            },
+            "Raspberry Pi System": {
+                "Object Detection Setup": {},
+                "Communication Protocols": {},
+                "Power Management": {}
+            }
+        },
+        "Development": {
+            "Software": {
+                "Frontend": {
+                    "Map Interface": {},
+                    "Object Location Visualization": {},
+                    "User Controls and Settings": {}
+                },
+                "Backend": {
+                    "Database Integration": {},
+                    "GPS Data Processing": {},
+                    "Object Detection Pipeline": {}
+                }
+            },
+            "Hardware": {
+                "Drone Assembly": {
+                    "Camera Mounting": {},
+                    "GPS Module Installation": {}
+                },
+                "Raspberry Pi Setup": {
+                    "OS Configuration": {},
+                    "Peripheral Connections": {}
+                }
+            }
+        },
+        "Integration": {
+            "Drone and Raspberry Pi": {
+                "Communication Testing": {},
+                "Latency Analysis": {},
+                "Error Handling Implementation": {}
+            },
+            "End-to-End System": {
+                "Object Detection Validation": {},
+                "GPS Location Accuracy Testing": {},
+                "Database and Frontend Sync": {}
+            }
+        },
+        "Testing": {
+            "Software Testing": {
+                "Frontend Testing": {
+                    "UI Responsiveness": {},
+                    "Interactive Map Accuracy": {}
+                },
+                "Backend Testing": {
+                    "Data Storage Reliability": {},
+                    "GPS Data Validation": {},
+                    "Object Detection Results": {}
+                }
+            },
+            "Hardware Testing": {
+                "Drone Flight Testing": {
+                    "Stability and Control": {},
+                    "GPS Signal Quality": {}
+                },
+                "System Performance": {
+                    "Power Consumption": {},
+                    "Communication Robustness": {}
+                }
+            }
+        }
+    }
+}
+
+
+    generate_wbs_graph(wbs_structure)
