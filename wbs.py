@@ -41,28 +41,38 @@ def find_subdictionary(structure, path):
     return {keys[-1]: sub_dict}
 
 
-def add_nodes_edges(graph, parent_id, structure, max_width):
+def add_nodes_edges(graph, parent_id, structure, max_width, current_depth, max_depth):
     """
     Recursively traverse the nested dictionary 'structure' and add nodes/edges
     to the Graphviz Digraph, wrapping text to a specified max_width.
+    Traversal stops once the current depth reaches max_depth.
+    The top-level node is considered at depth 1.
     """
     for task_name, sub_tasks in structure.items():
         wrapped_label = wrap_text(task_name, max_width)
-        current_id = str(hash(task_name))
+        # Incorporate current_depth into the node id to reduce potential hash collisions
+        current_id = str(hash(task_name + str(current_depth)))
         graph.node(current_id, wrapped_label)
         if parent_id is not None:
             graph.edge(parent_id, current_id)
-        if isinstance(sub_tasks, dict) and sub_tasks:
-            add_nodes_edges(graph, current_id, sub_tasks, max_width)
+        if isinstance(sub_tasks, dict) and sub_tasks and (current_depth < max_depth):
+            add_nodes_edges(
+                graph, current_id, sub_tasks, max_width, current_depth + 1, max_depth
+            )
 
 
 def generate_wbs_graph(
-    wbs_dict, top_task=None, output_filename="wbs_graph", max_width=15
+    wbs_dict,
+    top_task=None,
+    output_filename="wbs_graph",
+    max_width=15,
+    max_depth=float("inf"),
 ):
     """
     Generate a top-down (TB) graph from a nested dictionary describing the WBS.
     If 'top_task' (e.g., 'Development/Software') is provided, only generate the
     graph for that path's sub-dictionary.
+    The graph will only display nodes up to 'max_depth' levels deep (with the top node at depth 1).
     """
     if top_task:
         sub_dict = find_subdictionary(wbs_dict, top_task)
@@ -71,12 +81,19 @@ def generate_wbs_graph(
         wbs_dict = sub_dict
 
     dot = Digraph("WBS", format="png")
-    dot.attr("graph", rankdir="TB", splines="ortho", ranksep="1.5", nodesep="0.3")
+    dot.attr("graph", rankdir="TB", ranksep="1.5", nodesep="0.3")
 
-    add_nodes_edges(dot, None, wbs_dict, max_width)
+    add_nodes_edges(
+        dot, None, wbs_dict, max_width, current_depth=1, max_depth=max_depth
+    )
     dot.render(output_filename, view=False)
 
 
 if __name__ == "__main__":
-    # Example: generate only the 'Development/Software' portion of the WBS.
-    generate_wbs_graph(wbs_structure, top_task="T.A.I.L.S/Design", max_width=20)
+    # Example: generate only the 'T.A.I.L.S' portion of the WBS up to 3 levels deep.
+    generate_wbs_graph(
+        wbs_structure,
+        top_task="T.A.I.L.S/Development/Hardware",
+        max_width=20,
+        max_depth=3,
+    )
